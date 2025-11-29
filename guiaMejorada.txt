@@ -1,0 +1,256 @@
+📚 Manual del Curso: Creación del Backend E-commerce en Supabase para React
+Este manual detalla la migración de la base de datos damasco a Supabase y la configuración inicial del proyecto para integrarlo con React.
+
+🎯 Objetivo General
+Migrar el esquema de 11 tablas (incluyendo productos, categorias y pedidos) de MySQL (phpMyAdmin) a PostgreSQL (Supabase) y obtener las credenciales API.
+
+Parte 1: Pre-migración – Exportación de Datos a CSV (phpMyAdmin)
+El objetivo es extraer los datos de todas las tablas en un formato universal (CSV) para asegurar una importación limpia.
+
+1.1 Tablas a Exportar
+    Debemos tener un archivo CSV para cada una de las siguientes tablas:
+
+    carritos
+    categorias
+    dolar
+    estatus
+    items_carrito
+    items_pedido
+    marcas
+    pedidos
+    productos
+    subcategorias
+    usuarios
+
+1.2 Proceso de Exportación
+    Acceder a la Tabla: Abre tu entorno phpMyAdmin (ej: localhost:3306/damasco/). En el panel izquierdo, haz clic en la tabla que deseas exportar (ej: categorias).
+
+    Pestaña Exportar: En la barra de pestañas superior, haz clic en "Exportar" (Export).
+
+    Configuración:
+
+        Método de Exportación: Selecciona "Personalizado" (Custom).
+        Formato de Salida: Verifica que esté seleccionado "CSV".
+        Opciones Específicas del Formato (CRUCIAL): Asegúrate de que la casilla "Incluir nombres de columna en la primera fila" esté marcada.
+
+    Descargar: Desplázate hasta el final de la página y haz clic en el botón "Continuar" (Go). El navegador descargará el archivo CSV (ej: categorias.csv).
+
+    Repetir: Repite este proceso para las 11 tablas.
+
+Parte 2: Configuración del Backend (Supabase)
+    El objetivo es crear el proyecto y cargar los datos de los CSV.
+
+    2.1 Creación de Cuenta y Proyecto
+        Crear la Cuenta: Regístrate en Supabase.
+
+        Correo: cursoreact@arsistemaweb.com
+        Clave: )8&FcDX2o6t1Tzfv
+
+        Crear Proyecto: Una vez en la organización, haz clic en "New Project".
+
+            Name: DamascoStore (o damasco).
+            Database Password: DX2o6t1Tzfv (Clave de la base de datos).
+            Region: Selecciona la región geográfica más cercana.
+
+            Haz clic en "Create new project".
+
+    2.2 Importación de Tablas (CSV)
+        Navegar al Editor: Una vez dentro del proyecto, en el menú lateral izquierdo, haz clic en el icono de la base de datos, llamado "Table Editor" (Editor de Tablas).
+
+        Iniciar Importación: Haz clic en el botón "+ New Table".
+
+            Seleccionar CSV: En lugar de "Create a new table", selecciona la opción "Import data from CSV".
+
+        Importar:
+
+            Table Name: Escribe el nombre de la tabla (ej: productos).
+
+            Source: Selecciona "Upload File" y sube el archivo CSV correspondiente (ej: productos.csv).
+
+            Revisar e Importar: Revisa que la previsualización de datos sea correcta y haz clic en "Import".
+
+            Repetir: Repite este proceso para todas las 11 tablas.
+
+Parte 3: Ajustes Finales de la Base de Datos
+    Una vez que los datos están cargados, es fundamental establecer las relaciones y tipos de datos correctos para que el backend funcione.
+
+    3.1 Definición de Llaves Primarias (PK)
+        Acción: En el Table Editor, selecciona cada tabla, ve a la configuración de la columna id y asegúrate de que esté configurada como:
+
+        Primary Key (PK): Sí
+
+        Identity: Sí (Auto-incremento)
+
+        Not Null: Sí
+
+3.2 Corrección de Tipos de Datos (Moneda)
+    Corrección Importante: En las tablas que manejan moneda (como pedidos), las columnas con valores decimales deben ser de tipo numeric o double precision, no bigint.
+
+    Selecciona la tabla pedidos.
+
+    Edita la columna total y cambia su tipo a numeric.
+
+    Edita la columna tasa_dolar_usada y cambia su tipo a numeric.
+
+    Repite esta revisión para cualquier otra columna de precio/total en tablas como productos o items_pedido.
+
+3.3 Definición de Llaves Foráneas (FK)
+    Las llaves foráneas conectan las tablas. Deben definirse en las tablas que referencian a otras (ej: productos referencia a categorias).
+    Tabla	Columna FK	Referencia a Tabla
+    subcategorias	idcategoria	categorias
+    productos	idcategoria	categorias
+    productos	idsubcategoria	subcategorias
+    productos	idmarca	marcas
+    pedidos	usuario_id	usuarios
+    items_pedido	pedido_id	pedidos
+    items_pedido	producto_id	productos
+    items_carrito	carrito_id	carritos
+    items_carrito	producto_id	productos
+
+Parte 4: Obtención de Credenciales y Preparación de React
+    Una vez que la base de datos está perfecta, obtenemos las claves para conectar nuestro frontend de React.
+
+    En el menú lateral, ve a "Project Settings" (⚙️) y luego a "API".
+
+    Copia las siguientes credenciales (que serán usadas en el cliente de Supabase en React):
+
+   
+
+4.1 Obtención de Credenciales (Supabase Dashboard)
+
+    1. En tu Dashboard de Supabase, ve a "Project Settings" (⚙️) y luego a "API".
+    2. Copia los dos valores clave. Los nombraremos según la convención de React (REACT_APP_): 
+         
+    Credencial,                 Nombre en tu .env,                                      Valor (Ejemplo)
+    Project URL,                VITE_REACT_APP_SUPABASE_URL,                            https://ctkmstznoyaxsszowzch.supabase.co
+    Anon Public Key,            VITE_REACT_APP_SUPABASE_ANON_KEY,                       sb_publishable_IE84Dnel98IjFzhPzZ1cYw_qZsut3EK
+
+4.2 Configuración del Archivo .env    
+
+    1. En la raíz de tu proyecto React, crea un nuevo archivo llamado: .env.local
+
+    2. Pega las credenciales copiadas usando los nombres de las variables:
+
+        # .env.local (en la raíz del proyecto)
+        # ----------------------------------------------------
+        # ⚠️ ADVERTENCIA: NUNCA COMPARTIR ESTE ARCHIVO
+        # ----------------------------------------------------
+        VITE_REACT_APP_SUPABASE_URL="https://ctkmstznoyaxsszowzch.supabase.co"
+        VITE_REACT_APP_SUPABASE_ANON_KEY="sb_publishable_IE84Dnel98IjFzhPzZ1cYw_qZsut3EK"
+
+4.3 Inicialización del Cliente Supabase en React
+
+        1. Instalar SDK
+            npm install @supabase/supabase-js
+
+        2. Crear Cliente (Archivo src/supabaseClient.js)
+            Crea este archivo e inicializa el cliente utilizando las variables de entorno, 
+            haciendo el código limpio y profesional:
+
+            // src/supabaseClient.js
+
+            import { createClient } from '@supabase/supabase-js';
+
+            // 1. Cargar las variables de entorno de manera segura:
+            const supabaseUrl = import.meta.env.VITE_REACT_APP_SUPABASE_URL;
+            const supabaseKey = import.meta.env.VITE_REACT_APP_SUPABASE_ANON_KEY;
+
+            // 2. Comprobación (opcional, pero útil para depurar):
+            if (!supabaseUrl || !supabaseKey) {
+                console.error("Error: Las variables de entorno de Supabase no están configuradas correctamente.");
+            }
+
+// 3. Crear y exportar el cliente:
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+// NOTA: Si usas Create React App (CRA), usa: process.env.REACT_APP_SUPABASE_URL
+
+    Próximo Paso: Desarrollo de la Tienda (Lectura - READ)
+        Ahora que el cliente está configurado y la base de datos está lista, el siguiente paso es empezar a leer los datos para mostrar el catálogo:
+
+import { useEffect, useState } from "react";
+import { supabase } from '../supabaseClient';
+
+const FiltroCategorias = () => {
+    const [datos, setDatos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const getDatos = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('categorias')
+                // Solo necesitamos el id y el nombre para la navegación
+                .select('id, nombre'); 
+
+            if (error) {
+                throw new Error(error.message || 'Error desconocido al obtener categorías.');
+            }
+
+            setDatos(data); // Almacenar los datos
+            setLoading(false);  // Finalizar carga
+        } catch (err) {
+            console.error('Error al obtener categorías:', err);
+            setError(err.message);
+            setLoading(false);
+        }
+    };
+
+   
+    useEffect(() => {
+        getDatos();
+    }, []); 
+    if (loading) {
+        return (
+            <div className="text-center p-3">
+                <p>Cargando categorías...</p>
+            </div>
+        );
+    }
+    if (error) {
+        return (
+            <div className="p-3 text-danger">
+                <p>Error: {error}</p>
+            </div>
+        );
+    }
+    return (
+       
+           
+            <ul className="list-group list-group-flush">
+                {datos.map((item) => (
+                    // Usamos item.id como key. En el futuro, aquí irá la lógica de filtrado.
+                    <li key={item.id} className="list-group-item list-group-item-action">
+                        {item.nombre}
+                    </li>
+                ))}
+            </ul>
+       
+    )
+}
+
+export default FiltroCategorias
+
+
+
+
+Manual: Subida de Imágenes con Supabase Storage
+    1. Configuración Inicial en Supabase (Storage)
+        Primero, debemos crear un lugar público donde almacenar las imágenes.
+
+        Navega a Storage: En tu Dashboard de Supabase, 
+        haz clic en el icono de la carpeta o nube llamado "Storage" (Almacenamiento).
+
+        Crear un Nuevo Bucket: Haz clic en "New bucket".
+
+        Name: Llama al bucket imagenes_productos (o product_images).
+
+        Public access: Asegúrate de marcar la casilla "Public bucket" (Contenedor Público). Esto es crucial para que las imágenes sean visibles en tu tienda sin necesidad de autenticación.
+
+        Guarda el Bucket.
+
+        2. Función de Subida en React
+        Debido a que subir archivos es una operación diferente a las consultas de datos, usaremos el objeto storage del cliente de Supabase.
+
+        Aquí tienes la función que puedes reutilizar para subir cualquier archivo 
+        (File de JavaScript) al bucket que acabamos de crear.
